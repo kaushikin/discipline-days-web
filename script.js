@@ -1,322 +1,209 @@
-const app = document.getElementById("app");
+const calendar = document.getElementById("calendar");
+const monthYear = document.getElementById("monthYear");
+const prevMonthBtn = document.getElementById("prevMonth");
+const nextMonthBtn = document.getElementById("nextMonth");
 
-const quotes = [
-  "One day at a time.",
-  "Small wins become big wins.",
-  "Stay strong today.",
-  "Discipline beats excuses.",
-  "Your future self will thank you.",
-  "Focus. Breathe. Continue.",
-  "Progress matters more than perfection."
-];
+const selectedDateTitle = document.getElementById("selectedDateTitle");
+const socialHoursInput = document.getElementById("socialHours");
+const drinksInput = document.getElementById("drinks");
+const smokeInput = document.getElementById("smoke");
+const pornInput = document.getElementById("porn");
+const saveBtn = document.getElementById("saveBtn");
+const clearBtn = document.getElementById("clearBtn");
+const dayStatus = document.getElementById("dayStatus");
 
-function getTodayKey() {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, "0");
-  const d = String(now.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
+let currentDate = new Date();
+let selectedDate = null;
+
+const STORAGE_KEY = "discipline-days-data";
+
+function getData() {
+  return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
 }
 
-function dateKey(date) {
+function saveData(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function formatDateKey(date) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
   const d = String(date.getDate()).padStart(2, "0");
   return `${y}-${m}-${d}`;
 }
 
-function loadData() {
-  return {
-    pin: localStorage.getItem("dd_pin") || "",
-    streak: Number(localStorage.getItem("dd_streak") || 0),
-    bestStreak: Number(localStorage.getItem("dd_bestStreak") || 0),
-    resets: Number(localStorage.getItem("dd_resets") || 0),
-    lastMarkedDate: localStorage.getItem("dd_lastMarkedDate") || "",
-    completedDates: JSON.parse(localStorage.getItem("dd_completedDates") || "[]")
-  };
+function getDayScore(entry) {
+  if (!entry) return null;
+
+  let score = 0;
+
+  if (entry.socialHours !== "" && Number(entry.socialHours) <= 1.5) score++;
+  if (entry.drinks === "no") score++;
+  if (entry.smoke === "no") score++;
+  if (entry.porn === "no") score++;
+
+  return score;
 }
 
-function saveData(data) {
-  localStorage.setItem("dd_pin", data.pin);
-  localStorage.setItem("dd_streak", data.streak);
-  localStorage.setItem("dd_bestStreak", data.bestStreak);
-  localStorage.setItem("dd_resets", data.resets);
-  localStorage.setItem("dd_lastMarkedDate", data.lastMarkedDate);
-  localStorage.setItem("dd_completedDates", JSON.stringify(data.completedDates));
+function getDayClass(entry) {
+  if (!entry) return "gray";
+
+  const score = getDayScore(entry);
+
+  if (score === 4) return "green";
+  if (score >= 2) return "orange";
+  return "red";
 }
 
-function showToast(message) {
-  const old = document.querySelector(".toast");
-  if (old) old.remove();
+function renderCalendar() {
+  calendar.innerHTML = "";
 
-  const toast = document.createElement("div");
-  toast.className = "toast";
-  toast.textContent = message;
-  document.body.appendChild(toast);
+  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  days.forEach(day => {
+    const dayName = document.createElement("div");
+    dayName.className = "day-name";
+    dayName.textContent = day;
+    calendar.appendChild(dayName);
+  });
 
-  setTimeout(() => {
-    toast.remove();
-  }, 2500);
-}
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
 
-function showModal(title, message, onYes) {
-  const backdrop = document.createElement("div");
-  backdrop.className = "modal-backdrop";
-  backdrop.innerHTML = `
-    <div class="modal">
-      <h3>${title}</h3>
-      <p>${message}</p>
-      <div class="modal-actions">
-        <button class="btn-secondary" id="modalNo">No</button>
-        <button class="btn-primary" id="modalYes">Yes</button>
-      </div>
-    </div>
-  `;
+  monthYear.textContent = currentDate.toLocaleString("default", {
+    month: "long",
+    year: "numeric"
+  });
 
-  document.body.appendChild(backdrop);
+  const firstDay = new Date(year, month, 1).getDay();
+  const totalDays = new Date(year, month + 1, 0).getDate();
 
-  backdrop.querySelector("#modalNo").onclick = () => backdrop.remove();
-  backdrop.querySelector("#modalYes").onclick = () => {
-    backdrop.remove();
-    onYes();
-  };
-}
-
-function showInfoModal(title, message) {
-  const backdrop = document.createElement("div");
-  backdrop.className = "modal-backdrop";
-  backdrop.innerHTML = `
-    <div class="modal">
-      <h3>${title}</h3>
-      <p>${message}</p>
-      <div class="modal-actions">
-        <button class="btn-primary" id="modalOk">OK</button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(backdrop);
-  backdrop.querySelector("#modalOk").onclick = () => backdrop.remove();
-}
-
-function recentDays(count = 14) {
-  const today = new Date();
-  const days = [];
-  for (let i = count - 1; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(today.getDate() - i);
-    days.push(new Date(d.getFullYear(), d.getMonth(), d.getDate()));
+  for (let i = 0; i < firstDay; i++) {
+    const empty = document.createElement("div");
+    empty.className = "day empty";
+    calendar.appendChild(empty);
   }
-  return days;
+
+  const data = getData();
+
+  for (let day = 1; day <= totalDays; day++) {
+    const cellDate = new Date(year, month, day);
+    const dateKey = formatDateKey(cellDate);
+    const entry = data[dateKey];
+
+    const dayCell = document.createElement("div");
+    dayCell.className = `day ${getDayClass(entry)}`;
+    dayCell.textContent = day;
+
+    if (selectedDate && formatDateKey(selectedDate) === dateKey) {
+      dayCell.classList.add("selected");
+    }
+
+    dayCell.addEventListener("click", () => {
+      selectedDate = cellDate;
+      loadSelectedDate();
+      renderCalendar();
+    });
+
+    calendar.appendChild(dayCell);
+  }
 }
 
-function todayQuote() {
-  const day = new Date().getDate();
-  return quotes[day % quotes.length];
+function loadSelectedDate() {
+  if (!selectedDate) return;
+
+  const dateKey = formatDateKey(selectedDate);
+  const data = getData();
+  const entry = data[dateKey] || {
+    socialHours: "",
+    drinks: "",
+    smoke: "",
+    porn: ""
+  };
+
+  selectedDateTitle.textContent = `Tracking: ${selectedDate.toDateString()}`;
+  socialHoursInput.value = entry.socialHours;
+  drinksInput.value = entry.drinks;
+  smokeInput.value = entry.smoke;
+  pornInput.value = entry.porn;
+
+  updateDayStatus(entry);
 }
 
-function renderApp() {
-  const data = loadData();
-
-  if (!data.pin) {
-    renderSetPin();
+function updateDayStatus(entry) {
+  if (!selectedDate) {
+    dayStatus.textContent = "No date selected.";
     return;
   }
 
-  renderLogin();
+  const score = getDayScore(entry);
+
+  if (score === null) {
+    dayStatus.textContent = "No data saved for this day.";
+    return;
+  }
+
+  if (score === 4) {
+    dayStatus.textContent = "Excellent day ✅ All goals met.";
+  } else if (score >= 2) {
+    dayStatus.textContent = "Partial day ⚠️ Some goals were missed.";
+  } else {
+    dayStatus.textContent = "Poor day ❌ Most goals were missed.";
+  }
 }
 
-function renderSetPin() {
-  app.innerHTML = `
-    <div class="center">
-      <div class="auth-box">
-        <h2>Set PIN</h2>
-        <p class="subtitle">Create a 4-digit PIN for Discipline Days</p>
-        <input id="pin1" type="password" maxlength="4" placeholder="Enter PIN" />
-        <input id="pin2" type="password" maxlength="4" placeholder="Confirm PIN" />
-        <button class="btn-primary" id="savePinBtn">Save PIN</button>
-      </div>
-    </div>
-  `;
+saveBtn.addEventListener("click", () => {
+  if (!selectedDate) {
+    alert("Please select a date from the calendar.");
+    return;
+  }
 
-  document.getElementById("savePinBtn").onclick = () => {
-    const pin1 = document.getElementById("pin1").value.trim();
-    const pin2 = document.getElementById("pin2").value.trim();
+  const data = getData();
+  const dateKey = formatDateKey(selectedDate);
 
-    if (pin1.length !== 4 || pin2.length !== 4) {
-      showToast("PIN must be 4 digits");
-      return;
-    }
-
-    if (pin1 !== pin2) {
-      showToast("PIN does not match");
-      return;
-    }
-
-    const data = loadData();
-    data.pin = pin1;
-    saveData(data);
-    showToast("PIN saved");
-    renderLogin();
-  };
-}
-
-function renderLogin() {
-  app.innerHTML = `
-    <div class="center">
-      <div class="auth-box">
-        <h2>Unlock Discipline Days</h2>
-        <p class="subtitle">Enter your 4-digit PIN</p>
-        <input id="loginPin" type="password" maxlength="4" placeholder="PIN" />
-        <button class="btn-primary" id="unlockBtn">Unlock</button>
-      </div>
-    </div>
-  `;
-
-  document.getElementById("unlockBtn").onclick = () => {
-    const entered = document.getElementById("loginPin").value.trim();
-    const data = loadData();
-
-    if (entered === data.pin) {
-      renderHome();
-    } else {
-      showToast("Wrong PIN");
-    }
-  };
-}
-
-function renderHome() {
-  const data = loadData();
-  const markedToday = data.lastMarkedDate === getTodayKey();
-  const progress = Math.min((data.streak / 30) * 100, 100);
-
-  const calendarHtml = recentDays()
-    .map((day) => {
-      const key = dateKey(day);
-      const isDone = data.completedDates.includes(key);
-      const isToday = key === getTodayKey();
-      return `
-        <div class="day-box ${isDone ? "done" : ""} ${isToday ? "today" : ""}">
-          <div>${day.getDate()}</div>
-          <div>${isDone ? "✓" : "-"}</div>
-        </div>
-      `;
-    })
-    .join("");
-
-  app.innerHTML = `
-    <div class="container">
-      <div class="topbar">
-        <h1>Discipline Days</h1>
-        <button class="btn-secondary" id="removePinBtn">Remove PIN</button>
-      </div>
-
-      <div class="card quote">
-        <h3>Today's Quote</h3>
-        <p>${todayQuote()}</p>
-      </div>
-
-      <div class="grid">
-        <div class="stat orange">
-          <div>Current Streak</div>
-          <div class="stat-value">${data.streak}</div>
-        </div>
-        <div class="stat green">
-          <div>Best Streak</div>
-          <div class="stat-value">${data.bestStreak}</div>
-        </div>
-        <div class="stat red">
-          <div>Resets</div>
-          <div class="stat-value">${data.resets}</div>
-        </div>
-        <div class="stat indigo">
-          <div>Today</div>
-          <div class="stat-value">${markedToday ? "Done" : "Not Yet"}</div>
-        </div>
-      </div>
-
-      <div class="card progress-wrap">
-        <h3>30 Day Goal</h3>
-        <div class="progress-bar-bg">
-          <div class="progress-bar-fill" style="width:${progress}%"></div>
-        </div>
-        <p>${data.streak} / 30 days completed</p>
-      </div>
-
-      <div class="card">
-        <h3>Recent 14 Days</h3>
-        <div class="calendar-grid">${calendarHtml}</div>
-        <p class="small">Green = completed, Orange border = today</p>
-      </div>
-
-      <div class="actions">
-        <button class="btn-primary" id="markBtn">${markedToday ? "Today Already Marked" : "Mark Today"}</button>
-        <button class="btn-secondary" id="resetBtn">Reset Streak</button>
-      </div>
-
-      <div class="card tips">
-        <h3>Quick Help</h3>
-        <ul>
-          <li>Put phone away for 5 minutes</li>
-          <li>Drink water</li>
-          <li>Take deep breaths</li>
-          <li>Go for a short walk</li>
-          <li>Read or study for 10 minutes</li>
-        </ul>
-      </div>
-    </div>
-  `;
-
-  document.getElementById("markBtn").onclick = () => {
-    const latest = loadData();
-    const today = getTodayKey();
-
-    if (latest.lastMarkedDate === today) {
-      showToast("Already marked today");
-      return;
-    }
-
-    latest.streak += 1;
-    if (latest.streak > latest.bestStreak) {
-      latest.bestStreak = latest.streak;
-    }
-    latest.lastMarkedDate = today;
-
-    if (!latest.completedDates.includes(today)) {
-      latest.completedDates.push(today);
-    }
-
-    saveData(latest);
-
-    if (latest.streak % 7 === 0) {
-      showInfoModal("Amazing!", `You completed ${latest.streak} discipline days. Keep going!`);
-    } else {
-      showToast("Great job! Today marked successfully.");
-    }
-
-    renderHome();
+  const entry = {
+    socialHours: socialHoursInput.value,
+    drinks: drinksInput.value,
+    smoke: smokeInput.value,
+    porn: pornInput.value
   };
 
-  document.getElementById("resetBtn").onclick = () => {
-    showModal("Reset streak?", "Are you sure you want to reset your streak?", () => {
-      const latest = loadData();
-      latest.streak = 0;
-      latest.resets += 1;
-      latest.lastMarkedDate = "";
-      saveData(latest);
-      showToast("Streak reset");
-      renderHome();
-    });
-  };
+  data[dateKey] = entry;
+  saveData(data);
+  updateDayStatus(entry);
+  renderCalendar();
 
-  document.getElementById("removePinBtn").onclick = () => {
-    showModal("Remove PIN?", "Do you want to remove your PIN lock?", () => {
-      const latest = loadData();
-      latest.pin = "";
-      saveData(latest);
-      showToast("PIN removed");
-      renderApp();
-    });
-  };
-}
+  alert("Day saved successfully.");
+});
 
-renderApp();
+clearBtn.addEventListener("click", () => {
+  if (!selectedDate) {
+    alert("Please select a date first.");
+    return;
+  }
+
+  const data = getData();
+  const dateKey = formatDateKey(selectedDate);
+
+  delete data[dateKey];
+  saveData(data);
+
+  socialHoursInput.value = "";
+  drinksInput.value = "";
+  smokeInput.value = "";
+  pornInput.value = "";
+
+  updateDayStatus(null);
+  renderCalendar();
+});
+
+prevMonthBtn.addEventListener("click", () => {
+  currentDate.setMonth(currentDate.getMonth() - 1);
+  renderCalendar();
+});
+
+nextMonthBtn.addEventListener("click", () => {
+  currentDate.setMonth(currentDate.getMonth() + 1);
+  renderCalendar();
+});
+
+renderCalendar();
