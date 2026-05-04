@@ -4,25 +4,73 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Discipline Days</title>
-
-  <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#4f46e5" />
-  <link rel="icon" href="icon-192.png" />
-  <link rel="apple-touch-icon" href="icon-192.png" />
-
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div id="app"></div>
+  <div class="app">
+    <h1>Discipline Days</h1>
+    <p class="subtitle">Track your daily discipline on the calendar</p>
+
+    <div class="calendar-header">
+      <button id="prevMonth">&lt;</button>
+      <h2 id="monthYear"></h2>
+      <button id="nextMonth">&gt;</button>
+    </div>
+
+    <div id="calendar" class="calendar"></div>
+
+    <div class="tracker-card">
+      <h3 id="selectedDateTitle">Select a date</h3>
+
+      <label class="field">
+        <span>Social media usage (hours)</span>
+        <input type="number" id="socialHours" step="0.1" min="0" placeholder="e.g. 1.2" />
+        <small>Goal: less than or equal to 1.5 hours/day</small>
+      </label>
+
+      <label class="field">
+        <span>Drinks</span>
+        <select id="drinks">
+          <option value="">Select</option>
+          <option value="no">No</option>
+          <option value="yes">Yes</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Smoke</span>
+        <select id="smoke">
+          <option value="">Select</option>
+          <option value="no">No</option>
+          <option value="yes">Yes</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Masturbation / Porn</span>
+        <select id="porn">
+          <option value="">Select</option>
+          <option value="no">No</option>
+          <option value="yes">Yes</option>
+        </select>
+      </label>
+
+      <div class="actions">
+        <button id="saveBtn">Save Day</button>
+        <button id="clearBtn" class="secondary">Clear Day</button>
+      </div>
+
+      <p id="dayStatus" class="status">No date selected.</p>
+    </div>
+
+    <div class="legend">
+      <div><span class="dot green"></span> Good day</div>
+      <div><span class="dot orange"></span> Partial</div>
+      <div><span class="dot red"></span> Poor day</div>
+      <div><span class="dot gray"></span> No data</div>
+    </div>
+  </div>
 
   <script src="script.js"></script>
-
-  <script>
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./service-worker.js");
-      });
-    }
-  </script>
 </body>
 </html>
