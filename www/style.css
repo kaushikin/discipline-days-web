@@ -75,3 +75,37 @@ button:hover {
 .danger button:hover {
   background: #b91c1c;
 }
+textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  box-sizing: border-box;
+  resize: vertical;
+}
+
+ul {
+  text-align: left;
+  padding-left: 20px;
+}
+
+li {
+  background: #f8fafc;
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  list-style-type: "✅ ";
+}
+
+.delete-btn {
+  background: #ef4444;
+  margin-top: 8px;
+  padding: 8px;
+  font-size: 14px;
+}
+
+.delete-btn:hover {
+  background: #b91c1c;
+}
