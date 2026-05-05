@@ -9,7 +9,14 @@ const quotes = [
 ];
 
 function saveStartDate() {
-  const startDate = document.getElementById("startDate").value;
+  const startDateInput = document.getElementById("startDate");
+
+  if (!startDateInput) {
+    alert("Start date box not found.");
+    return;
+  }
+
+  const startDate = startDateInput.value;
 
   if (!startDate) {
     alert("Please choose a start date first.");
@@ -21,15 +28,26 @@ function saveStartDate() {
 }
 
 function updateDays() {
-  const savedDate = localStorage.getItem("startDate");
+  const daysCount = document.getElementById("daysCount");
+  const message = document.getElementById("message");
+  const startDateInput = document.getElementById("startDate");
 
-  if (!savedDate) {
-    document.getElementById("daysCount").textContent = "0 Days";
-    document.getElementById("message").textContent = "Choose your start date to begin.";
+  if (!daysCount || !message) {
     return;
   }
 
-  document.getElementById("startDate").value = savedDate;
+  const savedDate = localStorage.getItem("startDate");
+
+  if (!savedDate) {
+    daysCount.textContent = "0 Days";
+    message.textContent = "Choose your start date to begin.";
+    showBadges(0);
+    return;
+  }
+
+  if (startDateInput) {
+    startDateInput.value = savedDate;
+  }
 
   const start = new Date(savedDate);
   const today = new Date();
@@ -41,23 +59,25 @@ function updateDays() {
   const days = Math.floor(difference / (1000 * 60 * 60 * 24));
 
   if (days < 0) {
-    document.getElementById("daysCount").textContent = "0 Days";
-    document.getElementById("message").textContent = "Start date cannot be in the future.";
+    daysCount.textContent = "0 Days";
+    message.textContent = "Start date cannot be in the future.";
+    showBadges(0);
     return;
   }
 
-  document.getElementById("daysCount").textContent = days + " Days 🔥";
+  daysCount.textContent = days + " Days 🔥";
+  showBadges(days);
 
   if (days === 0) {
-    document.getElementById("message").textContent = "Today is your first day. Great start!";
+    message.textContent = "Today is your first day. Great start!";
   } else if (days === 1) {
-    document.getElementById("message").textContent = "1 day strong. Keep going!";
+    message.textContent = "1 day strong. Keep going!";
   } else if (days >= 7 && days < 30) {
-    document.getElementById("message").textContent = "Amazing! You crossed one week!";
+    message.textContent = "Amazing! You crossed one week!";
   } else if (days >= 30) {
-    document.getElementById("message").textContent = "Excellent! You crossed 30 days!";
+    message.textContent = "Excellent! You crossed 30 days!";
   } else {
-    document.getElementById("message").textContent = "Keep going. You are doing great!";
+    message.textContent = "Keep going. You are doing great!";
   }
 }
 
@@ -66,19 +86,29 @@ function resetStreak() {
 
   if (confirmReset) {
     localStorage.removeItem("startDate");
-    document.getElementById("startDate").value = "";
+
+    const startDateInput = document.getElementById("startDate");
+
+    if (startDateInput) {
+      startDateInput.value = "";
+    }
+
     updateDays();
     alert("It is okay. Start again. You can do it.");
   }
 }
 
 function newQuote() {
+  const quote = document.getElementById("quote");
+
+  if (!quote) {
+    return;
+  }
+
   const randomNumber = Math.floor(Math.random() * quotes.length);
-  document.getElementById("quote").textContent = quotes[randomNumber];
+  quote.textContent = quotes[randomNumber];
 }
 
-updateDays();
-newQuote();
 function getReasons() {
   const savedReasons = localStorage.getItem("reasons");
 
@@ -95,6 +125,12 @@ function saveReasons(reasons) {
 
 function addReason() {
   const reasonInput = document.getElementById("reasonInput");
+
+  if (!reasonInput) {
+    alert("Reason box not found.");
+    return;
+  }
+
   const reasonText = reasonInput.value.trim();
 
   if (!reasonText) {
@@ -113,6 +149,11 @@ function addReason() {
 
 function showReasons() {
   const reasonsList = document.getElementById("reasonsList");
+
+  if (!reasonsList) {
+    return;
+  }
+
   const reasons = getReasons();
 
   reasonsList.innerHTML = "";
@@ -142,4 +183,46 @@ function deleteReason(index) {
   showReasons();
 }
 
+function showBadges(days) {
+  const badgesDiv = document.getElementById("badges");
+
+  if (!badgesDiv) {
+    return;
+  }
+
+  badgesDiv.innerHTML = "";
+
+  const badges = [];
+
+  if (days >= 1) {
+    badges.push("🏅 1 Day");
+  }
+
+  if (days >= 7) {
+    badges.push("🔥 7 Days");
+  }
+
+  if (days >= 30) {
+    badges.push("💪 30 Days");
+  }
+
+  if (days >= 100) {
+    badges.push("👑 100 Days");
+  }
+
+  if (badges.length === 0) {
+    badgesDiv.innerHTML = "<p>No badges yet. Start today!</p>";
+    return;
+  }
+
+  badges.forEach(function(badgeText) {
+    const badge = document.createElement("span");
+    badge.className = "badge";
+    badge.textContent = badgeText;
+    badgesDiv.appendChild(badge);
+  });
+}
+
+updateDays();
+newQuote();
 showReasons();
