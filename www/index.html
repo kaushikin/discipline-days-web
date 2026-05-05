@@ -3,26 +3,38 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Discipline Days</title>
-
-  <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#4f46e5" />
-  <link rel="icon" href="icon-192.png" />
-  <link rel="apple-touch-icon" href="icon-192.png" />
-
+  <title>DisplinDays</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div id="app"></div>
+  <div class="app">
+    <h1>DisplinDays</h1>
+    <p class="subtitle">Track your clean days. Build discipline.</p>
+
+    <div class="card">
+      <h2 id="daysCount">0 Days</h2>
+      <p id="message">Choose your start date to begin.</p>
+    </div>
+
+    <div class="card">
+      <label for="startDate">My start date:</label>
+      <input type="date" id="startDate" />
+      <button onclick="saveStartDate()">Save Start Date</button>
+    </div>
+
+    <div class="card">
+      <h3>Motivation</h3>
+      <p id="quote">You are stronger than your habit.</p>
+      <button onclick="newQuote()">New Quote</button>
+    </div>
+
+    <div class="card danger">
+      <h3>Reset Streak</h3>
+      <p>If you need to restart, it is okay. Try again.</p>
+      <button onclick="resetStreak()">Reset</button>
+    </div>
+  </div>
 
   <script src="script.js"></script>
-
-  <script>
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./service-worker.js");
-      });
-    }
-  </script>
 </body>
 </html>
