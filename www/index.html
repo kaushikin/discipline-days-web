@@ -3,48 +3,198 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DisplinDays</title>
+  <title>Discipline Days</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="app">
-    <h1>DisplinDays</h1>
-    <p class="subtitle">Track your clean days. Build discipline.</p>
+    <h1>Discipline Days</h1>
+    <p class="subtitle">Track habits. Beat urges. Build better days.</p>
 
-    <div class="card">
-      <h2 id="daysCount">0 Days</h2>
-      <p id="message">Choose your start date to begin.</p>
+    <div class="calendar-header">
+      <button id="prevMonth">&lt;</button>
+      <h2 id="monthYear"></h2>
+      <button id="nextMonth">&gt;</button>
     </div>
 
-    <div class="card">
-      <label for="startDate">My start date:</label>
-      <input type="date" id="startDate" />
-      <button onclick="saveStartDate()">Save Start Date</button>
+    <div id="calendar" class="calendar"></div>
+
+    <div class="dashboard-card">
+      <h3>Discipline Dashboard</h3>
+
+      <div class="stats-grid">
+        <div class="stat-box">
+          <span id="currentStreak">0</span>
+          <p>Current Streak</p>
+        </div>
+
+        <div class="stat-box">
+          <span id="bestStreak">0</span>
+          <p>Best Streak</p>
+        </div>
+
+        <div class="stat-box">
+          <span id="goodDays">0</span>
+          <p>Good Days This Month</p>
+        </div>
+
+        <div class="stat-box">
+          <span id="disciplineScore">0%</span>
+          <p>Discipline Score</p>
+        </div>
+      </div>
+
+      <div class="level-box">
+        <h4 id="disciplineLevel">Beginner</h4>
+        <p id="levelMessage">Start tracking to unlock your level.</p>
+      </div>
     </div>
 
-    <div class="card">
-      <h3>Motivation</h3>
-      <p id="quote">You are stronger than your habit.</p>
-      <button onclick="newQuote()">New Quote</button>
+    <div class="tracker-card">
+      <h3 id="selectedDateTitle">Select a date</h3>
+
+      <label class="field">
+        <span>Social media usage (hours)</span>
+        <input
+          type="number"
+          id="socialHours"
+          step="0.1"
+          min="0"
+          placeholder="e.g. 1.2"
+        />
+        <small>Goal: less than or equal to 1.5 hours/day</small>
+      </label>
+
+      <label class="field">
+        <span>Drinks</span>
+        <select id="drinks">
+          <option value="">Select</option>
+          <option value="no">No</option>
+          <option value="yes">Yes</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Smoke</span>
+        <select id="smoke">
+          <option value="">Select</option>
+          <option value="no">No</option>
+          <option value="yes">Yes</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Masturbation / Porn</span>
+        <select id="porn">
+          <option value="">Select</option>
+          <option value="no">No</option>
+          <option value="yes">Yes</option>
+        </select>
+      </label>
+
+      <!-- Phase 1 Feature: Mood Tracker -->
+      <label class="field">
+        <span>Mood today</span>
+        <select id="mood">
+          <option value="">Select mood</option>
+          <option value="happy">😊 Happy</option>
+          <option value="motivated">🔥 Motivated</option>
+          <option value="calm">😌 Calm</option>
+          <option value="stressed">😣 Stressed</option>
+          <option value="angry">😡 Angry</option>
+          <option value="lonely">😔 Lonely</option>
+          <option value="bored">🥱 Bored</option>
+          <option value="tired">😴 Tired</option>
+          <option value="anxious">😰 Anxious</option>
+        </select>
+      </label>
+
+      <!-- Phase 1 Feature: Trigger / Relapse Reason -->
+      <label class="field">
+        <span>Main trigger today</span>
+        <select id="trigger">
+          <option value="">Select trigger</option>
+          <option value="none">None</option>
+          <option value="stress">Stress</option>
+          <option value="boredom">Boredom</option>
+          <option value="loneliness">Loneliness</option>
+          <option value="late-night-scrolling">Late night scrolling</option>
+          <option value="friends-party">Friends / Party</option>
+          <option value="anger">Anger</option>
+          <option value="urge">Strong urge</option>
+          <option value="habit">Old habit</option>
+          <option value="other">Other</option>
+        </select>
+        <small>This helps you understand what causes weak moments.</small>
+      </label>
+
+      <!-- Phase 1 Feature: Daily Notes / Journal -->
+      <label class="field">
+        <span>Daily notes / journal</span>
+        <textarea
+          id="notes"
+          rows="4"
+          placeholder="Write what happened today, what triggered you, or what you are proud of..."
+        ></textarea>
+        <small>Your notes stay private on this device.</small>
+      </label>
+
+      <div class="actions">
+        <button id="saveBtn">Save Day</button>
+        <button id="clearBtn" class="secondary">Clear Day</button>
+      </div>
+
+      <p id="dayStatus" class="status">No date selected.</p>
     </div>
-    <div class="card">
-  <h3>My Reasons</h3>
-  <p>Write why you want to stay strong.</p>
 
-  <textarea id="reasonInput" placeholder="Example: I want better health"></textarea>
+    <div class="help-card">
+      <h3>Need Help Now?</h3>
+      <p>If you feel an urge or feel like giving up, press this button.</p>
 
-  <button onclick="addReason()">Add Reason</button>
+      <button onclick="showEmergencyHelp()">I Need Help Now</button>
 
-  <ul id="reasonsList"></ul>
-</div>
+      <div id="helpBox" class="help-box hidden">
+        <h4>Emergency Reset Plan</h4>
 
-    <div class="card danger">
-      <h3>Reset Streak</h3>
-      <p>If you need to restart, it is okay. Try again.</p>
-      <button onclick="resetStreak()">Reset</button>
+        <p class="help-message">
+          Pause. You do not need to act on this urge. Give yourself 10 minutes.
+        </p>
+
+        <ol>
+          <li>Take 5 slow deep breaths.</li>
+          <li>Drink a glass of water.</li>
+          <li>Stand up and move away from your phone or trigger.</li>
+          <li>Do 10 push-ups or walk for 2 minutes.</li>
+          <li>Remind yourself: “I only need to win this moment.”</li>
+          <li>Wait 10 minutes before making any decision.</li>
+          <li>Message or talk to someone you trust if the urge is strong.</li>
+        </ol>
+
+        <div class="quick-help">
+          <h4>Quick Distractions</h4>
+          <ul>
+            <li>Go outside for fresh air</li>
+            <li>Take a cold shower or wash your face</li>
+            <li>Play music and clean your room</li>
+            <li>Write your trigger in the notes</li>
+            <li>Open your goals and remember why you started</li>
+          </ul>
+        </div>
+
+        <p class="help-message strong">
+          You are not weak. This urge is temporary. Your discipline is permanent.
+        </p>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div><span class="dot green"></span> Good day</div>
+      <div><span class="dot orange"></span> Partial</div>
+      <div><span class="dot red"></span> Poor day</div>
+      <div><span class="dot gray"></span> No data</div>
     </div>
   </div>
 
-    <script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
